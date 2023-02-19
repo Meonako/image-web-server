@@ -47,6 +47,70 @@ Have you ever want to access ***ONLY*** your outputs images from your phone?
 }
 ```
 
+# format.html
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Images</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: black;
+        }
+
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            margin: 0 auto;
+        }
+
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    {{ data }}
+
+    <script>
+        function main() {
+            const reloadBtn = document.querySelector("#reload-btn");
+            if (!reloadBtn) return;
+
+            reloadBtn.addEventListener('click', async () => {
+                const response = await fetch('/reload');
+                if (!response.ok) return;
+
+                location.reload();
+            })
+        }
+
+        main()
+    </script>
+</body>
+</html>
+```
+
 # TODO
 
 - Customizable address (Currently fixed to `0.0.0.0:80`)
