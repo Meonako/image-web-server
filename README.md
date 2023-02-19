@@ -10,7 +10,7 @@ Have you ever want to access ***ONLY*** your outputs images from your phone?
 - Transfer files to your phone **for these**? - [PHONE STORAGE / TIME TO TRANSFER FILE]
 - What else have we got **for those**? - [IDK]
 
-# Usage
+# Get it up and running
 
 1. ***CHOOSE ONE***
     1. Drop the executable in your [AUTOMATIC1111's Web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) root folder (where `webui-user`/`launch.py` is located)
