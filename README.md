@@ -6,7 +6,7 @@
 
 Have you ever want to access ***ONLY*** your outputs images from your phone?   
 - Run [AUTOMATIC1111's Web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) (and install [images-browser](https://github.com/yfszzx/stable-diffusion-webui-images-browser)) **for this**? - [OVERKILL]
-- Upload images to cloud server (`Google Drive/Photos` and so on) which have limitation **for that**? - [NUMBERS LIMITATION]
+- Upload images to cloud service (`Google Drive/Photos` and so on) which have limitation **for that**? - [NUMBERS LIMITATION]
 - Transfer files to your phone **for these**? - [PHONE STORAGE / TIME TO TRANSFER FILE]
 - What else have we got **for those**? - [IDK]
 
