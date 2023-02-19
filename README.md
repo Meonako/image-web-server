@@ -9,7 +9,7 @@ Run [AUTOMATIC1111's Web UI](https://github.com/AUTOMATIC1111/stable-diffusion-w
 
 # TODO
 
-- Customizable address (Currently fixed to `127.0.0.1:80`)
+- Customizable address (Currently fixed to `0.0.0.0:80`)
 
 # Credits
 
