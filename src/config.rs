@@ -28,7 +28,7 @@ pub fn init() -> Config {
         Ok(str) => str,
         Err(e) => {
             if e.kind() == ErrorKind::NotFound {
-                let default_value = match serde_json::to_vec(&Config::default()) {
+                let default_value = match serde_json::to_vec_pretty(&Config::default()) {
                     Ok(json) => json,
                     Err(e) => {
                         log::error!("Cannot convert default value to json: {:?}", e);
