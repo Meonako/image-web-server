@@ -114,6 +114,7 @@ Have you ever want to access ***ONLY*** your outputs images from your phone?
 # TODO
 
 - Customizable address (Currently fixed to `0.0.0.0:80`)
+- Support for other types (img2img, extras, etc..)
 
 # Credits
 
