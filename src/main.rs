@@ -5,10 +5,12 @@ mod utils;
 use std::sync::RwLock;
 
 use actix_files::Files;
+use actix_web::http::StatusCode;
 use actix_web::web::Redirect;
 use actix_web::HttpResponse;
 use actix_web::{get, web, App, HttpServer, Responder};
 
+use colored::Colorize;
 use structs::AppState;
 
 const HTML_DEFAULT: &str = r##"
@@ -196,9 +198,22 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(app_data.clone())
-            .wrap(actix_web::middleware::Logger::new(
-                "%s [ %r ] %a - %T seconds",
-            ))
+            .wrap(
+                actix_web::middleware::Logger::new(
+                    "[ %{METHOD}xi %{STATUS}xo ] %{PATH}xi - %T seconds",
+                )
+                .custom_request_replace("METHOD", |req| req.method().to_string().bright_cyan().to_string())
+                .custom_response_replace("STATUS", |res| match res.status() {
+                    StatusCode::OK => "200".green().to_string(),
+                    StatusCode::NOT_MODIFIED => "304".blue().to_string(),
+                    StatusCode::NOT_FOUND => "404".red().to_string(),
+                    x => x.to_string(),
+                })
+                .custom_request_replace("PATH", |req| match req.path().to_string() {
+                    x if x.len() > 20 => x[..20].to_owned() + "...",
+                    x => x,
+                })
+            )
             .service(index)
             .service(txt_to_img)
             .service(reload)
