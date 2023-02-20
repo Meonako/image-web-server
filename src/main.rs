@@ -85,10 +85,10 @@ async fn txt_to_img(data: web::Data<AppState>, path: web::Path<usize>) -> impl R
     let html_file_path = &data.config.html_file;
     let html = utils::get_basic_html(html_file_path);
 
-    let folder_data = { data.sync_folder.read().unwrap() };
+    let images_list = { data.sync_folder.read().unwrap() };
     let limit_per_page = data.config.images_per_page;
 
-    let total_files = folder_data.len();
+    let total_files = images_list.len();
 
     let page = path.into_inner();
 
@@ -131,8 +131,8 @@ async fn txt_to_img(data: web::Data<AppState>, path: web::Path<usize>) -> impl R
 
     let start = last_index - (limit_per_page - 1);
 
-    for folder in &folder_data[start..last_index] {
-        let path: Vec<&str> = folder.split('\\').collect();
+    for image in &images_list[start..last_index] {
+        let path: Vec<&str> = image.split('\\').collect();
         let actual_files = path.last().unwrap();
         data += format!(r#"<img src="/files/{}"/>"#, actual_files).as_str()
     }
@@ -148,16 +148,16 @@ async fn txt_to_img(data: web::Data<AppState>, path: web::Path<usize>) -> impl R
 async fn reload(data: web::Data<AppState>) -> impl Responder {
     let path = data.config.images_folder.as_ref();
 
-    let outputs_path = utils::read_directory(path);
+    let image_path_list = utils::read_directory(path);
 
     {
         let mut folder_data = data.sync_folder.write().unwrap();
         log::info!(
             "Old Data: {} | New Data: {}",
             folder_data.len(),
-            outputs_path.len()
+            image_path_list.len()
         );
-        *folder_data = outputs_path;
+        *folder_data = image_path_list;
     }
 
     HttpResponse::Ok()
@@ -186,13 +186,13 @@ async fn main() -> std::io::Result<()> {
     log::info!("Binding on: {}", bind_address);
     log::info!("Images per page: {}", config.images_per_page);
 
-    let outputs_path = utils::read_directory(&folder);
+    let images_path_list = utils::read_directory(&folder);
 
     // Create state here to achieve globally shared state
     // it must be created outside of the closure passed to HttpServer::new and moved/cloned in.
     // If not, the state might be desync
     let app_data = web::Data::new(AppState {
-        sync_folder: RwLock::new(outputs_path),
+        sync_folder: RwLock::new(images_path_list),
         config,
     });
 
