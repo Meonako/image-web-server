@@ -130,9 +130,8 @@ async fn txt_to_img(data: web::Data<AppState>, path: web::Path<usize>) -> impl R
     };
 
     let start = last_index - (limit_per_page - 1);
-    let end = last_index;
 
-    for folder in &folder_data[start..end] {
+    for folder in &folder_data[start..last_index] {
         let path: Vec<&str> = folder.split('\\').collect();
         let actual_files = path.last().unwrap();
         data += format!(r#"<img src="/files/{}"/>"#, actual_files).as_str()
@@ -184,6 +183,7 @@ async fn main() -> std::io::Result<()> {
     let bind_address = config.address.clone();
     let folder = config.images_folder.clone();
 
+    log::info!("Binding on: {}", bind_address);
     log::info!("Images per page: {}", config.images_per_page);
 
     let outputs_path = utils::read_directory(&folder);
