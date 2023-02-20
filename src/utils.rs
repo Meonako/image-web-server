@@ -13,13 +13,16 @@ pub fn read_directory(target_folder: &str) -> Vec<String> {
         panic!("Outputs folder not found.");
     }
 
-    let mut result = 
-        read_dir(outputs_folder)
-            .expect("read outputs directory")
-            .map(|r| {
-                r.unwrap().file_name().to_str().unwrap_or_default().to_string()
-            })
-            .collect::<Vec<String>>();
+    let mut result = read_dir(outputs_folder)
+        .expect("read outputs directory")
+        .map(|r| {
+            r.unwrap()
+                .file_name()
+                .to_str()
+                .unwrap_or_default()
+                .to_string()
+        })
+        .collect::<Vec<String>>();
 
     result.sort_by(|a, b| {
         let filename_split_a: Vec<&str> = a.split('-').collect();
@@ -54,10 +57,10 @@ pub fn stdout_logger(
         "{} [ {} ]: {}",
         now.format("%d/%m/%Y %H:%M:%S").to_string().bold().green(),
         match record.level() {
-            flexi_logger::Level::Info => record.level().as_str().cyan(),
-            flexi_logger::Level::Error => record.level().as_str().red(),
-            flexi_logger::Level::Warn => record.level().as_str().yellow(),
-            _ => record.level().as_str().white(),
+            lvl if lvl == flexi_logger::Level::Info => lvl.as_str().cyan(),
+            lvl if lvl == flexi_logger::Level::Error => lvl.as_str().red(),
+            lvl if lvl == flexi_logger::Level::Warn => lvl.as_str().yellow(),
+            x => x.as_str().white(),
         },
         &record.args()
     )
