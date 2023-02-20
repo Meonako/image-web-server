@@ -181,6 +181,7 @@ async fn main() -> std::io::Result<()> {
             .unwrap();
 
     let config = config::init();
+    let bind_address = config.address.clone();
     let folder = config.images_folder.clone();
 
     log::info!("Images per page: {}", config.images_per_page);
@@ -210,7 +211,7 @@ async fn main() -> std::io::Result<()> {
                     x => x.to_string(),
                 })
                 .custom_request_replace("PATH", |req| match req.path().to_string() {
-                    x if x.len() > 20 => x[..20].to_owned() + "...",
+                    x if x.len() > 20 => x[..=20].to_owned() + "...",
                     x => x,
                 })
             )
@@ -219,7 +220,7 @@ async fn main() -> std::io::Result<()> {
             .service(reload)
             .service(Files::new("/files", folder.clone()))
     })
-    .bind(("0.0.0.0", 80))?
+    .bind(bind_address)?
     .workers(100)
     .run()
     .await

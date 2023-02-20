@@ -8,6 +8,7 @@ const CONFIG_FILE: &str = "iws.config.json";
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
+    pub address: String,
     pub images_folder: String,
     pub images_per_page: usize,
     pub html_file: String,
@@ -16,6 +17,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
+            address: "0.0.0.0:80".to_owned(),
             images_folder: "./outputs/txt2img-images".to_owned(),
             images_per_page: 100,
             html_file: "format.html".to_owned(),
