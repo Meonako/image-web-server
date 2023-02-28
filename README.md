@@ -45,46 +45,46 @@ Have you ever want to access ***ONLY*** your outputs images from your phone?
 ```javascript
 {
     // Address to bind. 0.0.0.0 will bind every address possible while 80 is the port. So you can access with `localhost` or `127.0.0.1` or your local IPv4
-    address: "0.0.0.0:80".to_owned(), 
+    address: "0.0.0.0:80", 
     
     // Enable Txt2Img folders and where the folder is located. If all folders are disable, it'll panic
-    txt2img: Txt2Img {
+    txt2img: {
         enable: true,
-        path: "./outputs/txt2img-images".to_owned(),
+        path: "./outputs/txt2img-images",
     },
     
     // Enable Txt2Img Grids folders and where the folder is located. If all folders are disable, it'll panic
-    txt2img_grid: Txt2ImgGrid {
+    txt2img_grid: {
         enable: false,
-        path: "./outputs/txt2img-grids".to_owned(),
+        path: "./outputs/txt2img-grids",
     },
     
     // Enable Img2Img folders and where the folder is located. If all folders are disable, it'll panic
-    img2img: Img2Img {
+    img2img: {
         enable: true,
-        path: "./outputs/img2img-images".to_owned(),
+        path: "./outputs/img2img-images",
     },
     
     // Enable Img2Img Grids folders and where the folder is located. If all folders are disable, it'll panic
-    img2img_grid: Img2ImgGrid {
+    img2img_grid: {
         enable: false,
-        path: "./outputs/img2img-grids".to_owned(),
+        path: "./outputs/img2img-grids",
     },
     
     // Enable Extras folders and where the folder is located. If all folders are disable, it'll panic
-    extras: Extras {
+    extras: {
         enable: true,
-        path: "./outputs/extras-images".to_owned(),
+        path: "./outputs/extras-images",
     },
     
     // How many images to show in 1 page
     images_per_page: 100,
     
     // Landing page (index page)
-    index_file: "index.html".to_owned(),
+    index_file: "index.html",
     
     // HTML file that will show the picture by replace `{{ data }}` with image source
-    html_file: "format.html".to_owned(),
+    html_file: "format.html",
 }
 ```
 
