@@ -1,4 +1,5 @@
 mod config;
+mod path;
 mod structs;
 mod utils;
 
@@ -6,12 +7,76 @@ use std::sync::RwLock;
 
 use actix_files::Files;
 use actix_web::http::StatusCode;
-use actix_web::web::Redirect;
-use actix_web::HttpResponse;
-use actix_web::{get, web, App, HttpServer, Responder};
+use actix_web::{web, App, HttpServer};
 
 use colored::Colorize;
 use structs::AppState;
+
+const INDEX_DEFAULT: &str = r##"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index | Images Server</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: black;
+            height: 100vh;
+        }
+
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            margin: 0 auto;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        button {
+            font-size: large;
+            background-color: inherit;
+            border: 1px solid white;
+            color: white;
+            padding: 1rem 2rem;
+            transition: .5s;
+            margin-top: 1rem;
+            width: 50%;
+        }
+
+        button:hover {
+            background-color: rgb(119, 119, 119);
+            color: black;
+        }
+
+        @media (max-width: 500px) {
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    {{ data }}
+
+    <script>
+        function handle(btn) {
+            window.location.href = `/${btn.id}/1`
+        }
+    </script>
+</body>
+</html>
+"##;
 
 const HTML_DEFAULT: &str = r##"
 <!DOCTYPE html>
@@ -54,6 +119,13 @@ const HTML_DEFAULT: &str = r##"
     </style>
 </head>
 <body>
+    <div class="nav">
+        <a href="{{ next page }}">Next Page</a>
+        <a href="{{ previous page }}">Previous Page</a>
+        <a href="{{ last page }}">Last Page</a>
+        <button id="reload-btn">Reload</button>
+    </div>
+
     {{ data }}
 
     <script>
@@ -62,7 +134,7 @@ const HTML_DEFAULT: &str = r##"
             if (!reloadBtn) return;
 
             reloadBtn.addEventListener('click', async () => {
-                const response = await fetch('/reload');
+                const response = await fetch('{{ reload path }}');
                 if (!response.ok) return;
 
                 location.reload();
@@ -75,153 +147,145 @@ const HTML_DEFAULT: &str = r##"
 </html>
 "##;
 
-#[get("/")]
-async fn index() -> impl Responder {
-    Redirect::to("/txt2img/1").permanent()
-}
-
-#[get("/txt2img/{page}")]
-async fn txt_to_img(data: web::Data<AppState>, path: web::Path<usize>) -> impl Responder {
-    let html_file_path = &data.config.html_file;
-    let html = utils::get_basic_html(html_file_path);
-
-    let images_list = { data.sync_folder.read().unwrap() };
-    let limit_per_page = data.config.images_per_page;
-
-    let total_files = images_list.len();
-
-    let page = path.into_inner();
-
-    let remainder = total_files % limit_per_page;
-    let last_page = match remainder {
-        0 => total_files / limit_per_page,
-        _ => total_files / limit_per_page + 1,
-    };
-
-    if page > last_page {
-        log::warn!("Navigate page: {} > lastpage: {}", page, last_page);
-        return HttpResponse::NotFound()
-            .content_type("text/plain")
-            .body("Not Found!");
-    }
-
-    let mut data = format!(
-        r#"
-        <div class="nav">
-            <a href="/txt2img/{}">Next Page</a>
-            <a href="/txt2img/{}">Previous Page</a>
-            <a href="/txt2img/{}">Last Page</a>
-            <button id="reload-btn">Reload</button>
-        </div>
-        <div class="container">
-        "#,
-        if page < last_page {
-            page + 1
-        } else {
-            last_page
-        },
-        page - 1,
-        last_page,
-    );
-
-    let last_index = match page {
-        pg if pg == last_page => (pg - 1) * limit_per_page + remainder,
-        pg => pg * limit_per_page,
-    };
-
-    let start = last_index - (limit_per_page - 1);
-
-    for image in &images_list[start..last_index] {
-        let path: Vec<&str> = image.split('\\').collect();
-        let actual_files = path.last().unwrap();
-        data += format!(r#"<img src="/files/{}"/>"#, actual_files).as_str()
-    }
-
-    data.push_str("</div>");
-
-    HttpResponse::Ok()
-        .content_type("text/html")
-        .body(html.replace("{{ data }}", &data))
-}
-
-#[get("/reload")]
-async fn reload(data: web::Data<AppState>) -> impl Responder {
-    let path = data.config.images_folder.as_ref();
-
-    let image_path_list = utils::read_directory(path);
-
-    {
-        let mut folder_data = data.sync_folder.write().unwrap();
-        log::info!(
-            "Old Data: {} | New Data: {}",
-            folder_data.len(),
-            image_path_list.len()
-        );
-        *folder_data = image_path_list;
-    }
-
-    HttpResponse::Ok()
-}
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     colored::control::set_virtual_terminal(true).unwrap();
 
-    let _logger = 
-        flexi_logger::Logger::try_with_str("info")
-            .unwrap()
-            .format_for_files(utils::file_logger)
-            .format_for_stdout(utils::stdout_logger)
-            .log_to_file(flexi_logger::FileSpec::default().directory("iws.log"))
-            .write_mode(flexi_logger::WriteMode::BufferAndFlush)
-            .print_message()
-            .duplicate_to_stdout(flexi_logger::Duplicate::All)
-            .start()
-            .unwrap();
+    let _logger = flexi_logger::Logger::try_with_str("info")
+        .unwrap()
+        .format_for_files(utils::file_logger)
+        .format_for_stdout(utils::stdout_logger)
+        .log_to_file(flexi_logger::FileSpec::default().directory("iws.log"))
+        .write_mode(flexi_logger::WriteMode::BufferAndFlush)
+        .print_message()
+        .duplicate_to_stdout(flexi_logger::Duplicate::All)
+        .start()
+        .unwrap();
 
     let config = config::init();
     let bind_address = config.address.clone();
-    let folder = config.images_folder.clone();
+    let path_list = config.get_enable_path();
+
+    if path_list.is_empty() {
+        log::error!("All path is disable.");
+        panic!("All path is disable");
+    }
 
     log::info!("Binding on: {}", bind_address);
     log::info!("Images per page: {}", config.images_per_page);
-
-    let images_path_list = utils::read_directory(&folder);
 
     // Create state here to achieve globally shared state
     // it must be created outside of the closure passed to HttpServer::new and moved/cloned in.
     // If not, the state might be desync
     let app_data = web::Data::new(AppState {
-        sync_folder: RwLock::new(images_path_list),
-        config,
+        txt2img: if config.txt2img.enable {
+            Some(RwLock::new(utils::read_directory(&config.txt2img.path)))
+        } else {
+            None
+        },
+        txt2img_grid: if config.txt2img_grid.enable {
+            Some(RwLock::new(utils::read_directory(
+                &config.txt2img_grid.path,
+            )))
+        } else {
+            None
+        },
+        img2img: if config.img2img.enable {
+            Some(RwLock::new(utils::read_directory(&config.img2img.path)))
+        } else {
+            None
+        },
+        img2img_grid: if config.img2img_grid.enable {
+            Some(RwLock::new(utils::read_directory(
+                &config.img2img_grid.path,
+            )))
+        } else {
+            None
+        },
+        extras: if config.extras.enable {
+            Some(RwLock::new(utils::read_directory(&config.extras.path)))
+        } else {
+            None
+        },
+        config: config.clone(),
     });
 
     HttpServer::new(move || {
-        App::new()
+        let mut app = App::new()
             .app_data(app_data.clone())
             .wrap(
                 actix_web::middleware::Logger::new(
                     "[ %{METHOD}xi %{STATUS}xo ] %{PATH}xi - %T seconds",
                 )
-                .custom_request_replace("METHOD", |req| req.method().to_string().bright_cyan().to_string())
+                .custom_request_replace("METHOD", |req| {
+                    req.method().to_string().bright_cyan().to_string()
+                })
                 .custom_response_replace("STATUS", |res| match res.status() {
                     StatusCode::OK => "200".green().to_string(),
                     StatusCode::NOT_MODIFIED => "304".blue().to_string(),
                     StatusCode::NOT_FOUND => "404".red().to_string(),
                     x => x.to_string(),
                 })
-                .custom_request_replace("PATH", |req| match req.path().to_string() {
+                .custom_request_replace("PATH", |req| match req.path() {
                     x if x.len() > 20 => x[..=20].to_owned() + "...",
-                    x => x,
-                })
+                    x => x.to_owned(),
+                }),
             )
-            .service(index)
-            .service(txt_to_img)
-            .service(reload)
-            .service(Files::new("/files", folder.clone()))
+            .service(path::index);
+            // .service(path::txt_to_img)
+            // .service(path::img_to_img)
+            // .service(web::scope("/reload").service(path::reload::reload_txt2img));
+
+        let mut reload_scope = web::scope("/reload");
+        let mut assets_scope = web::scope("/assets");
+
+        if config.txt2img.enable {
+            app = app.service(path::txt_to_img);
+            reload_scope = reload_scope.service(path::reload::reload_txt2img);
+        }
+
+        if config.txt2img_grid.enable {
+            app = app.service(path::txt_to_img_grids);
+            reload_scope = reload_scope.service(path::reload::reload_txt2img_grid);
+        }
+
+        if config.img2img.enable {
+            app = app.service(path::img_to_img);
+            reload_scope = reload_scope.service(path::reload::reload_img2img);
+        }
+
+        if config.img2img_grid.enable {
+            app = app.service(path::img_to_img_grids);
+            reload_scope = reload_scope.service(path::reload::reload_img2img_grid);
+        }
+
+        if config.extras.enable {
+            app = app.service(path::extras_images);
+            reload_scope = reload_scope.service(path::reload::reload_extras);
+        }
+
+        for path in path_list.iter() {
+            let spliter = 
+                if path.contains("/") {
+                    "/"
+                } else if path.contains("\\") {
+                    "\\"
+                } else {
+                    panic!("Path does not contains either / or \\.")
+                };
+            
+            let folder_name = path.split(spliter).last().unwrap();
+
+            assets_scope = assets_scope.service(Files::new(&format!("/{}", folder_name), path));
+        }
+
+
+        app
+            .service(reload_scope)
+            .service(assets_scope)
     })
     .bind(bind_address)?
-    .workers(100)
+    .workers(20)
     .run()
     .await
 }

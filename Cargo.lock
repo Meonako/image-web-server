@@ -729,7 +729,9 @@ dependencies = [
  "actix-web",
  "colored",
  "flexi_logger",
+ "lazy_static",
  "log",
+ "regex",
  "serde",
  "serde_json",
 ]

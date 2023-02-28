@@ -1,9 +1,16 @@
 use colored::Colorize;
+use lazy_static::lazy_static;
+use regex::Regex;
 use std::{
+    cmp::Ordering,
     fs::{read_dir, read_to_string},
     io::{Error, Write},
     path::Path,
 };
+
+lazy_static! {
+    static ref RE: Regex = Regex::new(r"\d+").unwrap();
+}
 
 pub fn read_directory(target_folder: &str) -> Vec<String> {
     log::info!("Reading folder: {}", target_folder);
@@ -25,24 +32,31 @@ pub fn read_directory(target_folder: &str) -> Vec<String> {
         .collect::<Vec<String>>();
 
     result.sort_by(|a, b| {
-        let filename_split_a: Vec<&str> = a.split('-').collect();
-        let filename_split_b: Vec<&str> = b.split('-').collect();
+        if let Some(a_number) = RE.find(a) {
+            if let Some(b_number) = RE.find(b) {
+                let a_number = a_number.as_str().parse::<i32>().unwrap();
+                let b_number = b_number.as_str().parse::<i32>().unwrap();
 
-        let id_a = filename_split_a.first().unwrap().parse::<i32>().unwrap();
-        let id_b = filename_split_b.first().unwrap().parse::<i32>().unwrap();
-
-        id_a.cmp(&id_b)
+                a_number.cmp(&b_number)
+            } else {
+                log::error!("Not found number in b");
+                Ordering::Equal
+            }
+        } else {
+            log::error!("Not found number in a");
+            Ordering::Equal
+        }
     });
 
     result
 }
 
-pub fn get_basic_html(path: &str) -> String {
+pub fn get_basic_html(path: &str, def: &str) -> String {
     match read_to_string(path) {
         Ok(s) => s,
         Err(e) => {
             println!("{}\nReturning Default HTML;", e);
-            crate::HTML_DEFAULT.to_owned()
+            def.to_owned()
         }
     }
 }
