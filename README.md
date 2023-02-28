@@ -15,20 +15,20 @@ Have you ever want to access ***ONLY*** your outputs images from your phone?
 1. ***CHOOSE ONE***
     1. Drop the executable in your [AUTOMATIC1111's Web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) root folder (where `webui-user`/`launch.py` is located)
     1. Run executable (anywhere). Don't panic as 'nothing happening' is intended.  
-    Now you'll see `iws.config.json` file (contains your configuration) and `iws.log` folder (contains logs of the executable) besides where executable is located.   
+    
+        Now you'll see `iws.config.json` file (contains your configuration) and `iws.log` folder (contains logs of the executable) besides where executable is located.   
     
         Now open `iws.config.json` and edit the path to absolute path  
         (e.g. `C:/Program Files/stable-diffusion-webui/outputs/txt2img-images`)
         
         > ![image](https://user-images.githubusercontent.com/76484203/221943215-9eb2302e-5192-4a4b-af45-dc64b51f8e37.png)
 
-2. Run the executable and you should see something like this
-> if nothing is happening (common case)
->  - you follow the second method and did not edit the path correctly (***maybe you forgor to turn `\` to `/` or `\\`?***)
->  - Port `80` is binding to something else
->  - You do not have a permission to bind port `80`
-
+2. Run the executable and you should see something like this  
 ![image](https://user-images.githubusercontent.com/76484203/221943564-897e9965-0549-47ed-b349-44698d1a9612.png)
+    > if nothing is happening (common case)
+    >  - you follow the second method and did not edit the path correctly (***maybe you forgor to turn `\` to `/` or `\\`?***)
+    >  - Port `80` is binding to something else
+    >  - You do not have a permission to bind port `80`
 
 3. Open your favorite browser in your computer and enter `127.0.0.1` or `localhost` to the address bar and you should see choice to folders based on what you enable  
 ![image](https://user-images.githubusercontent.com/76484203/221944419-7c852d8b-e701-4cab-931f-21e18089c0b8.png)
