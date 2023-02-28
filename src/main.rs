@@ -29,12 +29,6 @@ const INDEX_DEFAULT: &str = r##"
             height: 100vh;
         }
 
-        img {
-            max-width: 100%;
-            max-height: 100%;
-            margin: 0 auto;
-        }
-
         .container {
             display: flex;
             flex-direction: column;
