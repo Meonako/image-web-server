@@ -24,7 +24,7 @@ Have you ever want to access ***ONLY*** your outputs images from your phone?
         > ![image](https://user-images.githubusercontent.com/76484203/221943215-9eb2302e-5192-4a4b-af45-dc64b51f8e37.png)
 
 2. Run the executable and you should see something like this  
-![image](https://user-images.githubusercontent.com/76484203/221943564-897e9965-0549-47ed-b349-44698d1a9612.png)
+![image](https://user-images.githubusercontent.com/76484203/221947675-f9ccefa6-b859-4e25-80be-8eae02c40d3e.png)
     > if nothing is happening (common case)
     >  - you follow the second method and did not edit the path correctly (***maybe you forgor to turn `\` to `/` or `\\`?***)
     >  - Port `80` is binding to something else
