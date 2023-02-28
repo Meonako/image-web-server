@@ -30,7 +30,7 @@ Have you ever want to access ***ONLY*** your outputs images from your phone?
     >  - Port `80` is binding to something else
     >  - You do not have a permission to bind port `80`
 
-3. Open your favorite browser in your computer and enter `127.0.0.1` or `localhost` to the address bar and you should see choice to folders based on what you enable  
+3. Open your favorite browser in your computer and enter `127.0.0.1` or `localhost` to the address bar and you should see choices to each page based on what you enable  
 ![image](https://user-images.githubusercontent.com/76484203/221944419-7c852d8b-e701-4cab-931f-21e18089c0b8.png)
 
 4. To access from your local network (i.e. your phone with the same network connection), you'll need to know the `Private Address` of your PC.
