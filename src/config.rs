@@ -131,7 +131,7 @@ pub fn init() -> Config {
         }
     };
 
-    match serde_json::from_str::<Config>(&data) {
+    match serde_json::from_str(&data) {
         Ok(val) => val,
         Err(_) => Config::default(),
     }
