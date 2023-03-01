@@ -8,45 +8,45 @@ const CONFIG_FILE: &str = "iws.config.json";
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Config {
-    pub address: String,
-    pub txt2img: Txt2Img,
-    pub txt2img_grid: Txt2ImgGrid,
-    pub img2img: Img2Img,
-    pub img2img_grid: Img2ImgGrid,
-    pub extras: Extras,
-    pub images_per_page: usize,
-    pub index_file: String,
-    pub html_file: String,
+    pub address:            String,
+    pub txt2img:            Txt2Img,
+    pub txt2img_grid:       Txt2ImgGrid,
+    pub img2img:            Img2Img,
+    pub img2img_grid:       Img2ImgGrid,
+    pub extras:             Extras,
+    pub images_per_page:    usize,
+    pub index_file:         String,
+    pub html_file:          String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Txt2Img {
     pub enable: bool,
-    pub path: String,
+    pub path:   String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Txt2ImgGrid {
     pub enable: bool,
-    pub path: String,
+    pub path:   String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Img2Img {
     pub enable: bool,
-    pub path: String,
+    pub path:   String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Img2ImgGrid {
     pub enable: bool,
-    pub path: String,
+    pub path:   String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Extras {
     pub enable: bool,
-    pub path: String,
+    pub path:   String,
 }
 
 impl Config {
