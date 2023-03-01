@@ -6,7 +6,6 @@ mod utils;
 use std::sync::RwLock;
 
 use actix_files::Files;
-use actix_web::http::StatusCode;
 use actix_web::{web, App, HttpServer};
 
 use colored::Colorize;
@@ -209,27 +208,27 @@ async fn main() -> std::io::Result<()> {
     });
 
     HttpServer::new(move || {
-        let mut app = App::new()
-            .app_data(app_data.clone())
-            .wrap(
-                actix_web::middleware::Logger::new(
-                    "[ %{METHOD}xi %{STATUS}xo ] %{PATH}xi - %T seconds",
+        let mut app = 
+            App::new()
+                .app_data(app_data.clone())
+                .wrap(
+                    actix_web::middleware::Logger::new(
+                        "[ %{METHOD}xi %{STATUS}xo ] %{PATH}xi - %T seconds",
+                    )
+                    .custom_request_replace("METHOD", |req| {
+                        req.method().to_string().bright_cyan().to_string()
+                    })
+                    .custom_response_replace("STATUS", |res| match res.status() {
+                        status if status.is_success() => status.as_str().green().to_string(),
+                        status if status.is_redirection() => status.as_str().blue().to_string(),
+                        status if status.is_client_error() => status.as_str().red().to_string(),
+                        status if status.is_server_error() => status.as_str().bright_red().to_string(),
+                        x => x.to_string(),
+                    })
+                    .custom_request_replace("PATH", |req| req.path().to_string())
+                    .exclude_regex("/assets/*"),
                 )
-                .custom_request_replace("METHOD", |req| {
-                    req.method().to_string().bright_cyan().to_string()
-                })
-                .custom_response_replace("STATUS", |res| match res.status() {
-                    StatusCode::OK => "200".green().to_string(),
-                    StatusCode::NOT_MODIFIED => "304".blue().to_string(),
-                    StatusCode::NOT_FOUND => "404".red().to_string(),
-                    x => x.to_string(),
-                })
-                .custom_request_replace("PATH", |req| match req.path() {
-                    x if x.len() > 20 => x[..=20].to_owned() + "...",
-                    x => x.to_owned(),
-                }),
-            )
-            .service(path::index);
+                .service(path::index);
 
         let mut reload_scope = web::scope("/reload");
         let mut assets_scope = web::scope("/assets");
