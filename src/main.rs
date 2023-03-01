@@ -157,7 +157,6 @@ async fn main() -> std::io::Result<()> {
         .unwrap();
 
     let config = config::init();
-    let bind_address = config.address.clone();
     let path_list = config.get_enable_path();
 
     if path_list.is_empty() {
@@ -165,42 +164,47 @@ async fn main() -> std::io::Result<()> {
         panic!("All path is disable");
     }
 
-    log::info!("Binding on: {}", bind_address);
+    log::info!("Binding on: {}", config.address);
     log::info!("Images per page: {}", config.images_per_page);
 
     // Create state here to achieve globally shared state
     // it must be created outside of the closure passed to HttpServer::new and moved/cloned in.
     // If not, the state might be desync
     let app_data = web::Data::new(AppState {
-        txt2img: if config.txt2img.enable {
-            Some(RwLock::new(utils::read_directory(&config.txt2img.path)))
-        } else {
-            None
-        },
-        txt2img_grid: if config.txt2img_grid.enable {
-            Some(RwLock::new(utils::read_directory(
-                &config.txt2img_grid.path,
-            )))
-        } else {
-            None
-        },
-        img2img: if config.img2img.enable {
-            Some(RwLock::new(utils::read_directory(&config.img2img.path)))
-        } else {
-            None
-        },
-        img2img_grid: if config.img2img_grid.enable {
-            Some(RwLock::new(utils::read_directory(
-                &config.img2img_grid.path,
-            )))
-        } else {
-            None
-        },
-        extras: if config.extras.enable {
-            Some(RwLock::new(utils::read_directory(&config.extras.path)))
-        } else {
-            None
-        },
+        txt2img: 
+            if config.txt2img.enable {
+                Some(RwLock::new(utils::read_directory(&config.txt2img.path)))
+            } else {
+                None
+            },
+        txt2img_grid: 
+            if config.txt2img_grid.enable {
+                Some(RwLock::new(utils::read_directory(
+                    &config.txt2img_grid.path,
+                )))
+            } else {
+                None
+            },
+        img2img: 
+            if config.img2img.enable {
+                Some(RwLock::new(utils::read_directory(&config.img2img.path)))
+            } else {
+                None
+            },
+        img2img_grid: 
+            if config.img2img_grid.enable {
+                Some(RwLock::new(utils::read_directory(
+                    &config.img2img_grid.path,
+                )))
+            } else {
+                None
+            },
+        extras: 
+            if config.extras.enable {
+                Some(RwLock::new(utils::read_directory(&config.extras.path)))
+            } else {
+                None
+            },
         config: config.clone(),
     });
 
@@ -226,9 +230,6 @@ async fn main() -> std::io::Result<()> {
                 }),
             )
             .service(path::index);
-            // .service(path::txt_to_img)
-            // .service(path::img_to_img)
-            // .service(web::scope("/reload").service(path::reload::reload_txt2img));
 
         let mut reload_scope = web::scope("/reload");
         let mut assets_scope = web::scope("/assets");
@@ -267,18 +268,15 @@ async fn main() -> std::io::Result<()> {
                 } else {
                     panic!("Path does not contains either / or \\.")
                 };
-            
+
             let folder_name = path.split(spliter).last().unwrap();
 
             assets_scope = assets_scope.service(Files::new(&format!("/{}", folder_name), path));
         }
 
-
-        app
-            .service(reload_scope)
-            .service(assets_scope)
+        app.service(reload_scope).service(assets_scope)
     })
-    .bind(bind_address)?
+    .bind(config.address)?
     .workers(20)
     .run()
     .await
